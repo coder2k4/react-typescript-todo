@@ -1,26 +1,72 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect, useState} from 'react';
+import {Navbar} from "./components/Navbar";
+import {FormInput} from "./components/FormInput";
+import {ITodo} from "./interfaces";
+import {TodosList} from "./components/TodosList";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    const [todos, setDodos] = useState<ITodo[]>([])
+
+    useEffect(()=>{
+        const fromLocalStorage = JSON.parse(localStorage.getItem('todos') || '[]') as ITodo[]
+        setDodos(fromLocalStorage)
+    }, [])
+
+
+    useEffect(()=>{
+        localStorage.setItem('todos', JSON.stringify(todos))
+    }, [todos])
+
+
+    const addHandler = (title: string) => {
+        const newTodo: ITodo = {
+            title,
+            id: Date.now(),
+            complete: false
+        }
+        setDodos((prevState) => ([newTodo, ...prevState]))
+    }
+
+
+    const onToggle = (id: number) => {
+        console.log(id)
+        // setDodos((prev) =>
+        //     prev.map(todo => {
+        //         if (todo.id === id) {
+        //             todo.complete = !todo.complete
+        //             console.log(todo.complete)
+        //             console.log('DOUBLE???')
+        //         }
+        //         return todo
+        //     }))
+        setDodos(todos.map(todo => {
+            if (todo.id === id) {
+                todo.complete = !todo.complete
+            }
+            return todo
+        }))
+    }
+
+
+    const onDelete = (id: number) => {
+        setDodos((prev) => {
+            return prev.filter(todo => todo.id !== id)
+        })
+    }
+
+
+    return (
+        <>
+            <Navbar/>
+            <div className="container">
+                <FormInput onAdd={addHandler}/>
+                <TodosList todos={todos}
+                           onToggle={onToggle}
+                           onDelete={onDelete}/>
+            </div>
+        </>
+    );
 }
 
 export default App;
